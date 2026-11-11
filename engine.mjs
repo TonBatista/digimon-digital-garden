@@ -1,4 +1,5 @@
-import {STARTERS,FORM_INFO,evolutionRules,KEY} from './data.mjs?v=2.0';
+import {ensureBehavior,normalizeBehavior,metabolicStep} from './behavior.mjs?v=2.1';
+import {STARTERS,FORM_INFO,evolutionRules,KEY} from './data.mjs?v=2.1';
 export const clamp=(n,min=0,max=100)=>Math.max(min,Math.min(max,n));
 export const xpNeeded=l=>40+l*18;
 export const skillLevel=(s,name)=>1+Math.floor((s.skills[name]||0)/30);
@@ -7,7 +8,15 @@ export function log(s,t){s.log.unshift(t);s.log=s.log.slice(0,25);}
 export function ready(s,r){return (!r.level||s.level>=r.level)&&(!r.from||skillLevel(s,r.from)>=r.skill&&s.unlocked.includes(r.from))&&(!r.stat||s.stats[r.stat]>=r.value)&&(!r.second||s.unlocked.includes(r.second)&&skillLevel(s,r.second)>=r.secondSkill);}
 export function unlock(s){let out=[];for(const r of evolutionRules(s.starter)){if(!s.unlocked.includes(r.name)&&ready(s,r)){s.unlocked.push(r.name);s.skills[r.name]=0;if(s.equipped.length<3)s.equipped.push(r.name);out.push(r.name);log(s,`${r.name} desbloqueado! Abra Digievoluir.`);}}return out;}
 export function gainXP(s,n,skill=true){s.xp+=n;let levels=0;while(s.xp>=xpNeeded(s.level)&&s.level<99){s.xp-=xpNeeded(s.level);s.level++;s.tp+=5;levels++;for(const k of ['strength','defense','spirit','wisdom','speed'])s.stats[k]+=2;}if(s.level===99)s.xp=Math.min(s.xp,xpNeeded(99));if(skill&&s.form!==s.starter)s.skills[s.form]=Math.min(2940,(s.skills[s.form]||0)+Math.round(n*.6));if(levels)log(s,`Nível ${s.level}! +${5*levels} TP para treinar.`);unlock(s);return levels;}
-export function tick(s,seconds){if(s.paused)return;seconds=clamp(seconds,0,21600);s.age+=seconds;const m=seconds/60,n=s.needs;n.hunger-=m*(s.sleeping?.65:1.7);n.toilet-=m*1.1;n.hygiene-=m*(.5+s.poop*.4);n.happiness-=m*(s.poop?1:.3);if(s.sleeping){n.energy+=m*14;n.health+=m*2;}else n.energy-=m*1.2;if(n.toilet<=0){s.poop=Math.min(3,s.poop+1);n.toilet=50;n.hygiene-=18;log(s,'Opa… aconteceu um acidente. Hora de limpar o quintal.');}if(n.hunger<15||n.hygiene<15)n.health-=m*2;else if(n.hunger>60&&n.hygiene>60)n.health+=m*.4;for(const k in n)n[k]=clamp(n[k]);s.last=Date.now();}
+export function tick(s,seconds){
+ if(s.paused)return;seconds=clamp(seconds,0,21600);ensureBehavior(s);
+ // Substeps keep offline catch-up and live simulation consistent.
+ for(let left=seconds;left>0;){const step=Math.min(15,left),m=step/60,n=s.needs;left-=step;s.age+=step;metabolicStep(s,step);
+  if(n.toilet<=0){s.poop=Math.min(3,s.poop+1);n.toilet=50;n.hygiene-=18;log(s,'Opa… aconteceu um acidente. Hora de limpar o quintal.');}
+  if(n.hunger<15||n.hygiene<15)n.health-=m*2;else if(n.hunger>60&&n.hygiene>60)n.health+=m*.4;
+  for(const k in n)n[k]=clamp(n[k]);
+ }s.last=Date.now();
+}
 export function canAct(s){return !s.sleeping&&s.needs.energy>=10&&s.needs.health>=15;}
 export function validateSave(s){
  if(!s||s.version!==1||!STARTERS[s.starter]||!FORM_INFO[s.form]||!Array.isArray(s.unlocked)||!Array.isArray(s.equipped)||!s.needs||!s.stats||!s.inventory||!s.skills||!s.settings||!Array.isArray(s.claimed)||!Array.isArray(s.log))return false;
@@ -17,6 +26,6 @@ export function validateSave(s){
  if(s.unlocked.some(f=>!FORM_INFO[f])||s.equipped.length>3||s.equipped.some(f=>!s.unlocked.includes(f))||(s.form!==s.starter&&!s.equipped.includes(s.form)))return false;
  return Object.values(s.skills).every(v=>Number.isFinite(v)&&v>=0)&&s.log.every(t=>typeof t==='string'&&t.length<500)&&typeof s.sleeping==='boolean'&&typeof s.paused==='boolean';
 }
-export function loadSave(storage){try{let s=JSON.parse(storage.getItem(KEY));if(!validateSave(s))return null;tick(s,Math.max(0,(Date.now()-s.last)/1000));return s;}catch{return null;}}
+export function loadSave(storage){try{let s=JSON.parse(storage.getItem(KEY));if(!validateSave(s))return null;normalizeBehavior(s);tick(s,Math.max(0,(Date.now()-s.last)/1000));return s;}catch{return null;}}
 export function train(s,stat,mode,quality){const cost=mode==='super'?3:1;if(!canAct(s)||s.tp<cost||!(stat in s.stats))return null;s.tp-=cost;s.trainings++;s.needs.energy=clamp(s.needs.energy-(mode==='super'?12:6));s.needs.hunger=clamp(s.needs.hunger-4);let gain=quality==='perfect'?(mode==='super'?18:8):quality==='good'?(mode==='super'?10:5):mode==='super'?0:2;s.stats[stat]+=gain;s.bond=clamp(s.bond+1);unlock(s);return gain;}
 export function battleStats(s){let mult=FORM_INFO[s.form][2];return {maxHp:Math.round((90+s.level*8+s.stats.defense)*mult),attack:Math.round((s.stats.strength+s.level*3)*mult),magic:Math.round((s.stats.spirit+s.level*3)*mult),defense:Math.round(s.stats.defense*mult),mp:30+Math.floor(s.stats.wisdom/2)};}

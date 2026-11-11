@@ -8,8 +8,11 @@ function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round
 function ellipse(c,x,y,rx,ry,col){c.fillStyle=col;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();}
 function poly(c,p,col){polygon(c,p,col);}
 function rnd(seed){let x=seed;return ()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296;};}
-export function drawSprite(c,name,x,y,scale=2,frame=0,flip=false){
- if(regions[name]){const r=regions[name],height=(name==='Renamon'?49:name==='Guilmon'?42:36)*scale,width=height*r.w/r.h;c.save();c.translate(Math.round(x),Math.round(y));c.scale(flip?-1:1,1);c.drawImage(atlas,r.x,r.y,r.w,r.h,-width/2,-height+((frame%2)?-1:0),width,height);c.restore();return;}
+export function drawSprite(c,name,x,y,scale=2,frame=0,flip=false,pose=null){
+ if(regions[name]){const r=regions[name],height=(name==='Renamon'?49:name==='Guilmon'?42:36)*scale,width=height*r.w/r.h;c.save();c.translate(Math.round(x),Math.round(y));c.scale(flip?-1:1,1);if(pose?.head){
+ // A soft horizontal deformation turns the head while keeping the feet planted.
+ const bands=20;for(let i=0;i<bands;i++){const top=i/bands,bottom=(i+1)/bands,offset=pose.head*Math.pow(1-top,2);c.drawImage(atlas,r.x,r.y+r.h*top,r.w,r.h/bands,-width/2+offset,-height+height*top,width,height*(bottom-top)+.35);}
+ }else c.drawImage(atlas,r.x,r.y,r.w,r.h,-width/2,-height+((frame%2)?-1:0),width,height);c.restore();return;}
  c.save();c.translate(Math.round(x),Math.round(y));c.scale(flip?-scale:scale,scale);c.translate(-24,-48);let foot=frame%2?1:0;
  const ren=['Renamon','Kyubimon','Taomon','Sakuyamon'].includes(name),red=['Guilmon','Growlmon','WarGrowlmon','Gallantmon'].includes(name),dino=['Agumon','Greymon','MetalGreymon','WarGreymon','SkullGreymon','BlackWarGreymon'].includes(name);
  if(ren){

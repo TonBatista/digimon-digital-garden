@@ -6,6 +6,16 @@ Bichinho virtual em português, para desktop e celular. Escolha Agumon, Renamon 
 
 Abra o link do GitHub Pages publicado neste repositório. Sem instalação, cadastro ou servidor de jogo. O progresso fica no navegador. Configurações permite exportar/importar seu save JSON. Pausar congela o tempo, inclusive offline.
 
+## Comportamento da versão 2.1
+
+- Respiração contínua, gestos de se coçar, olhar ao redor, espreguiçar, sentar e pequenos pulos. Respeita a preferência de movimento reduzido do aparelho.
+- IA local por estado e prioridade: temperamento persistente (brincalhão, curioso, carinhoso ou tranquilo), atenção, tédio, metabolismo variável e passeios espontâneos.
+- Balões legíveis em qualquer zoom, com pedidos de comida, banheiro, sono, banho, remédio, limpeza, carinho, brincadeira ou fruta. Toque no balão para abrir o cuidado.
+- Necessidades urgentes têm prioridade sobre vontades. Os pedidos reagem aos cuidados; atender fortalece o vínculo. Vontades têm intervalo e expiração, sem punições repentinas.
+- Exaustão provoca um cochilo automático; nesse cochilo o parceiro acorda quando recupera energia. Sono iniciado pelo jogador continua manual.
+- Temperamento e desejos acompanham o save. Pausar congela necessidades e decisões. Os saves da versão anterior são migrados automaticamente.
+- Sem chamadas externas, serviços pagos ou envio de dados para uma IA.
+
 ## Controles da versão 2
 
 - Quintal ocupa toda a tela. Abra Comida, Cuidar, Status ou Menu pelos botões inferiores.
@@ -35,7 +45,7 @@ Referência: [Digivolving FAQ — ZeroSaber](https://gamefaqs.gamespot.com/ps/56
 
 ## Código
 
-Sem dependências ou build. Sirva a raiz com qualquer servidor HTTP. Os módulos `app.mjs`, `engine.mjs`, `data.mjs`, `art.mjs`, `world.mjs` e `effects.mjs` usam as imagens locais `garden-v2.png` e `partners-v2.png`. Publicação pelo GitHub Pages a partir de `main`, na raiz.
+Sem dependências ou build. Sirva a raiz com qualquer servidor HTTP. Os módulos `app.mjs`, `engine.mjs`, `data.mjs`, `art.mjs`, `world.mjs`, `effects.mjs` e `behavior.mjs` usam as imagens locais `garden-v2.png` e `partners-v2.png`. Publicação pelo GitHub Pages a partir de `main`, na raiz.
 
 A publicação inicial foi feita sem executar testes, a pedido do usuário.
 
