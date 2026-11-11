@@ -1,4 +1,4 @@
-import {STARTERS,FORM_INFO,evolutionRules,KEY} from './data.mjs';
+import {STARTERS,FORM_INFO,evolutionRules,KEY} from './data.mjs?v=2.0';
 export const clamp=(n,min=0,max=100)=>Math.max(min,Math.min(max,n));
 export const xpNeeded=l=>40+l*18;
 export const skillLevel=(s,name)=>1+Math.floor((s.skills[name]||0)/30);

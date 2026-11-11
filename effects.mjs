@@ -1,0 +1,31 @@
+// Short procedural retro sound effects. No external audio downloads.
+export class SoundFX {
+ constructor(enabled){this.enabled=enabled;this.ctx=null;this.master=null;}
+ unlock(){if(!this.enabled())return;try{this.ctx??=new (window.AudioContext||window.webkitAudioContext)();this.master??=this.ctx.createGain();this.master.gain.value=.3;this.master.connect(this.ctx.destination);if(this.ctx.state==='suspended')this.ctx.resume();}catch{}}
+ play(kind='click'){
+  if(!this.enabled())return;this.unlock();const c=this.ctx;if(!c)return;
+  const phrases={click:[[660,.055]],close:[[440,.06]],pet:[[523,.11],[659,.11],[784,.2]],play:[[392,.09],[523,.09],[659,.09],[784,.17],[659,.08],[1047,.2]],feed:[[220,.075],[165,.07],[220,.075],[165,.07],[659,.14],[784,.19]],bath:[[1100,.08],[760,.1],[1350,.07],[950,.14],[1568,.16]],toilet:[[294,.13],[392,.13],[587,.24]],sleep:[[523,.25],[440,.3],[349,.45],[262,.6]],wake:[[262,.1],[330,.1],[392,.16],[523,.26]],clean:[[740,.08],[988,.08],[1319,.18]],heal:[[392,.15],[494,.15],[587,.15],[784,.35]],train:[[196,.07],[147,.1],[294,.08],[392,.15]],attack:[[160,.06],[95,.1],[65,.14]],magic:[[392,.06],[587,.06],[784,.06],[1175,.1],[1568,.18]],guard:[[220,.09],[440,.22]],flee:[[587,.08],[440,.09],[294,.1],[196,.18]],explore:[[330,.1],[494,.1],[659,.1],[988,.26]],evolve:[[262,.1],[330,.1],[392,.1],[523,.12],[659,.12],[784,.18],[1047,.4]],win:[[523,.12],[523,.09],[523,.09],[659,.24],[784,.16],[1047,.4]],bad:[[220,.2],[165,.3],[110,.35]],forage:[[659,.1],[784,.13],[988,.2]],buy:[[988,.08],[1319,.2]],equip:[[440,.07],[880,.15]],pause:[[440,.1],[330,.12]],save:[[523,.08],[784,.1]]};
+  let time=c.currentTime+.01;const notes=phrases[kind]||phrases.click;
+  for(const [freq,duration] of notes){let o=c.createOscillator(),g=c.createGain();o.type=['sleep','bath','heal','pet','toilet'].includes(kind)?'sine':'triangle';o.frequency.setValueAtTime(freq,time);if(['attack','bath','flee'].includes(kind))o.frequency.exponentialRampToValueAtTime(Math.max(30,freq*.6),time+duration);g.gain.setValueAtTime(0,time);g.gain.linearRampToValueAtTime(.2,time+.008);g.gain.exponentialRampToValueAtTime(.001,time+duration);o.connect(g);g.connect(this.master);o.start(time);o.stop(time+duration+.015);time+=duration*.85;}
+  if(['bath','clean','attack','toilet'].includes(kind)){const duration=kind==='bath'?.7:.25;let b=c.createBuffer(1,Math.floor(c.sampleRate*duration),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.09*(1-i/d.length);let n=c.createBufferSource(),filter=c.createBiquadFilter();filter.type='lowpass';filter.frequency.value=kind==='attack'?600:1800;n.buffer=b;n.connect(filter);filter.connect(this.master);n.start();}
+ }
+ mute(){if(this.master)this.master.gain.value=0;}
+}
+export const DURATION={pet:1800,play:2700,feed:2200,bath:2500,toilet:2600,sleep:1800,wake:1300,clean:2000,heal:2100,train:1700,attack:650,magic:1000,guard:900,flee:1100,explore:1600,evolve:3000,win:2200,bad:1400,forage:1500,buy:1100,equip:1200};
+export function actionEffect(c,kind,x,y,elapsed,duration,data={}){
+ const p=Math.min(1,elapsed/duration),fade=Math.min(1,(1-p)*4),phase=elapsed/1000;c.save();c.globalAlpha=fade;
+ const dot=(a,b,r,col)=>{c.fillStyle=col;c.fillRect(Math.round(a),Math.round(b),r,r);};
+ const ring=(xx,yy,r,col)=>{c.strokeStyle=col;c.lineWidth=1.5;c.beginPath();c.ellipse(xx,yy,r,r*.42,0,0,Math.PI*2);c.stroke();};
+ const heart=(xx,yy,z=1)=>{c.save();c.translate(Math.round(xx),Math.round(yy));c.scale(z,z);c.fillStyle='#ff91b4';[[0,1,2,2],[3,1,2,2],[0,3,5,2],[1,5,3,1],[2,6,1,1]].forEach(a=>c.fillRect(...a));c.restore();};
+ if(kind==='pet'||kind==='play'){for(let i=0;i<6;i++){let q=(p+i/6)%1;heart(x+Math.sin(i*2.4)*24,y-30-q*50,1.5);}if(kind==='play'){c.fillStyle='#ef985a';c.beginPath();c.arc(x+Math.sin(phase*5)*33,y-8-Math.abs(Math.sin(phase*7))*24,6,0,7);c.fill();}}
+ else if(kind==='feed'){c.save();c.translate(x+18-Math.sin(p*Math.PI)*10,y-26-Math.abs(Math.sin(p*10))*3);c.rotate(Math.sin(p*12)*.13);c.fillStyle='#f4e6bf';c.fillRect(-4,-2,23,5);c.fillStyle=data.food==='fruit'?'#f17f4c':data.food==='fish'?'#95d3df':'#a85532';c.fillRect(0,-7,13,16);c.fillStyle='#f9b877';c.fillRect(2,-5,4,7);c.restore();for(let i=0;i<5;i++)dot(x+15+Math.sin(i*6+p*7)*12,y-20+p*15-i*2,2,'#ffc975');}
+ else if(kind==='bath'){for(let i=0;i<20;i++){let q=(p+i/20)%1;let xx=x+Math.sin(i*2.8)*26,yy=y-6-q*65;c.strokeStyle=i%2?'#b5edff':'#f1fbff';c.lineWidth=1;c.beginPath();c.arc(xx,yy,2+(i%4),0,7);c.stroke();dot(xx-1,yy-2,1,'#fff');}for(let i=0;i<8;i++)dot(x-28+i*8,y-70+(elapsed*.1+i*7)%65,2,'#b6ecff');}
+ else if(kind==='toilet'){ring(x,y-1,14+p*15,'#c9eeaa');for(let i=0;i<5;i++)dot(x-17+i*8,y-12-((p+i*.2)%1)*25,2,'#d7e6a4');}
+ else if(kind==='sleep'||kind==='wake'){c.fillStyle='#f1e0a4';c.font='bold 11px monospace';c.fillText(kind==='sleep'?'z Z z':'☀',x+10,y-50-p*16);}
+ else if(kind==='clean'){c.save();c.translate(x+Math.sin(p*18)*22,y-5);c.rotate(Math.sin(p*18)*.5);c.fillStyle='#90613c';c.fillRect(0,-35,3,33);c.fillStyle='#edcc7b';c.fillRect(-6,-6,15,11);c.restore();for(let i=0;i<14;i++)dot(x+Math.sin(i*9+p*4)*40,y+Math.cos(i*7)*7,2,'#dace9d');}
+ else if(kind==='heal'){for(let i=0;i<7;i++){let yy=y-((p+i/7)%1)*75,xx=x+Math.sin(i*2)*23;c.fillStyle='#99f0b4';c.fillRect(xx-1,yy-5,3,11);c.fillRect(xx-5,yy-1,11,3);}ring(x,y,20+Math.sin(p*12)*4,'#8debb2');}
+ else if(kind==='evolve'||kind==='explore'||kind==='flee'){for(let i=0;i<4;i++)ring(x,y-5-i*14,18+Math.sin(p*12+i)*8,kind==='evolve'?'#ffeb8d':'#8ef8ff');for(let i=0;i<24;i++){let a=i*2.4+p*8,r=18+((i*7)%25)*(1-p);dot(x+Math.cos(a)*r,y-25+Math.sin(a)*r,2,i%2?'#c7ffff':'#ffda6a');}if(kind==='evolve'){c.globalAlpha=Math.sin(p*Math.PI)*.2;c.fillStyle='#fff5bd';c.fillRect(x-36,y-100,72,110);}}
+ else if(kind==='train'||kind==='attack'||kind==='magic'||kind==='guard'){if(kind==='guard')ring(x,y-20,30,'#91d9ff');else for(let i=0;i<12;i++){let a=i*Math.PI/6;dot(x+Math.cos(a)*p*50,y-22+Math.sin(a)*p*40,3,kind==='magic'?'#afd9ff':'#ffe696');}if(kind==='train'){c.fillStyle='#ffe39b';c.font='bold 11px monospace';c.fillText(data.label||'TREINO!',x-20,y-60-p*16);}}
+ else {for(let i=0;i<15;i++){let q=(p+i/15)%1;dot(x+Math.sin(i*5.7)*38,y-15-q*70,2,['#ffe18c','#a6ebc1','#b7dcff'][i%3]);}}
+ c.restore();
+}

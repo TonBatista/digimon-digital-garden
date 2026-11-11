@@ -1,11 +1,15 @@
 // Original, code-drawn pixel art. Fixed-resolution canvas, no remote assets.
 const ink='#20283e';
+const atlas=new Image(), regions={};
+atlas.onload=()=>{const a=document.createElement('canvas');a.width=atlas.width;a.height=atlas.height;const g=a.getContext('2d');g.drawImage(atlas,0,0);const d=g.getImageData(0,0,a.width,a.height).data,cell=a.width/3;['Agumon','Renamon','Guilmon'].forEach((name,i)=>{let left=Math.ceil(i*cell),right=Math.floor((i+1)*cell)-1,x0=right,y0=a.height,x1=left,y1=0;for(let y=0;y<a.height;y++)for(let x=left;x<=right;x++)if(d[(y*a.width+x)*4+3]>60){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}if(x1>x0)regions[name]={x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};});window.dispatchEvent(new Event('artready'));};
+atlas.src=new URL('./partners-v2.png',import.meta.url).href;
 export function polygon(c,points,color){c.fillStyle=color;c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();}
 function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h);}
 function ellipse(c,x,y,rx,ry,col){c.fillStyle=col;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();}
 function poly(c,p,col){polygon(c,p,col);}
 function rnd(seed){let x=seed;return ()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296;};}
 export function drawSprite(c,name,x,y,scale=2,frame=0,flip=false){
+ if(regions[name]){const r=regions[name],height=(name==='Renamon'?49:name==='Guilmon'?42:36)*scale,width=height*r.w/r.h;c.save();c.translate(Math.round(x),Math.round(y));c.scale(flip?-1:1,1);c.drawImage(atlas,r.x,r.y,r.w,r.h,-width/2,-height+((frame%2)?-1:0),width,height);c.restore();return;}
  c.save();c.translate(Math.round(x),Math.round(y));c.scale(flip?-scale:scale,scale);c.translate(-24,-48);let foot=frame%2?1:0;
  const ren=['Renamon','Kyubimon','Taomon','Sakuyamon'].includes(name),red=['Guilmon','Growlmon','WarGrowlmon','Gallantmon'].includes(name),dino=['Agumon','Greymon','MetalGreymon','WarGreymon','SkullGreymon','BlackWarGreymon'].includes(name);
  if(ren){
@@ -75,6 +79,7 @@ export function makeGarden(){const can=document.createElement('canvas');can.widt
  for(let i=0;i<47;i++){let x=155+random()*450,y=185+random()*160;if(Math.abs(x-383)/270+Math.abs(y-250)/120<.9&&!(x>290&&x<490&&y<275)){rect(c,x,y,1,4,'#366b50');rect(c,x-1,y-1,3,2,i%3===0?'#edcf7b':i%3===1?'#cc95b4':'#e2dfac');}}
  // Network connections under the grass.
  poly(c,[[80,265],[80,290],[223,362],[223,376]],'#59a7a3');rect(c,220,371,6,6,'#9fe6cf');poly(c,[[690,266],[690,285],[584,338],[584,353]],'#4e938e');rect(c,581,350,6,5,'#77d8c5');
+ const image=new Image();image.onload=()=>{can.width=768;can.height=512;c.imageSmoothingEnabled=false;c.drawImage(image,0,0,768,512);can.ready=true;window.dispatchEvent(new Event('artready'));};image.src=new URL('./garden-v2.png',import.meta.url).href;
  return can;
 }
 export function renderGarden(c,bg,s,t,pet){c.clearRect(0,0,768,470);c.drawImage(bg,0,0);let night=s&&(s.sleeping||Math.floor(s.age/600)%2===1);if(night){rect(c,0,0,768,470,'#081c4366');ellipse(c,300,147,13,9,'#ffcf6533');}

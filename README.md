@@ -6,6 +6,17 @@ Bichinho virtual em português, para desktop e celular. Escolha Agumon, Renamon 
 
 Abra o link do GitHub Pages publicado neste repositório. Sem instalação, cadastro ou servidor de jogo. O progresso fica no navegador. Configurações permite exportar/importar seu save JSON. Pausar congela o tempo, inclusive offline.
 
+## Controles da versão 2
+
+- Quintal ocupa toda a tela. Abra Comida, Cuidar, Status ou Menu pelos botões inferiores.
+- Toque/clique no Digimon para fazer carinho, com corações e som.
+- Arraste para mover a câmera; use pinça, roda do mouse ou botões −/+ para zoom. O botão centralizar restaura a câmera.
+- Toque em ♪ para ligar/desligar os efeitos sonoros. O navegador libera áudio após uma interação.
+- Animações e efeitos próprios para alimentação, carinho, brincadeira, banho, banheiro, sono, limpeza, remédio, treino, batalha, exploração e evolução.
+- Banheiro com entrada aberta, sem portas nem sinalização de gênero.
+- Teclado: M abre o menu, +/− controlam o zoom, 0 centraliza, Esc fecha a janela.
+- Mantém compatibilidade com os saves da primeira versão.
+
 ## Sistemas
 
 - Fome/saciedade, energia, banheiro, higiene, felicidade, saúde e vínculo.
@@ -18,13 +29,13 @@ Abra o link do GitHub Pages publicado neste repositório. Sem instalação, cada
 
 ## Escopo
 
-Fan game com arte original desenhada em Canvas, inspirado em Digimon World 3. Não reproduz exatamente os gráficos ou menus do original. A progressão foi adaptada para sessões curtas. Contém as três linhas naturais e rotas alternativas selecionadas, não todas as evoluções do jogo. DNA e Blast não estão implementados. Fome, banheiro e sono são a camada de bichinho virtual adicionada.
+Fan game com cenário e sprites originais gerados, efeitos em Canvas e janelas azuis inspiradas em Digimon World 3. Não reproduz exatamente os gráficos ou menus do original. A progressão foi adaptada para sessões curtas. Contém as três linhas naturais e rotas alternativas selecionadas, não todas as evoluções do jogo. DNA e Blast não estão implementados. Fome, banheiro e sono são a camada de bichinho virtual adicionada.
 
 Referência: [Digivolving FAQ — ZeroSaber](https://gamefaqs.gamespot.com/ps/562323-digimon-world-3/faqs/17462).
 
 ## Código
 
-Sem dependências ou build. Sirva `dist/` com qualquer servidor HTTP. `index.html`, `style.css`, `app.mjs`, `engine.mjs`, `data.mjs`, `art.mjs`, `favicon.svg`. Ao hospedar pelo GitHub Pages a partir da raiz, use as mesmas pastas/arquivos de `dist/` na raiz.
+Sem dependências ou build. Sirva a raiz com qualquer servidor HTTP. Os módulos `app.mjs`, `engine.mjs`, `data.mjs`, `art.mjs`, `world.mjs` e `effects.mjs` usam as imagens locais `garden-v2.png` e `partners-v2.png`. Publicação pelo GitHub Pages a partir de `main`, na raiz.
 
 A publicação inicial foi feita sem executar testes, a pedido do usuário.
 
